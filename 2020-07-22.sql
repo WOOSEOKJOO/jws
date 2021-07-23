@@ -1,5 +1,7 @@
 use mysql;
 
+
+
 CREATE TABLE 고객 (
 	고객아이디  VARCHAR(20)	 NOT NULL,
 	고객이름    VARCHAR(10)	 NOT NULL,
@@ -119,4 +121,117 @@ select * from 고객;
 select 등급, avg(적립금) from 고객 
 	group by 등급 having avg(적립금) >= 1000;
     
+select * from 주문;
+
+-- 주문고객별 수량 합계 조회
+select 주문고객, sum(수량) from 주문
+	group by 주문고객;
     
+-- 주문제품별 수량 합계 조회
+select 주문제품, 주문고객, sum(수량) from 주문
+	group by 주문제품;
+    
+-- 주문제품과 주문고객별 수량 합계를 조회
+
+select 주문제품, 주문고객, sum(수량) from 주문
+	group by 주문제품, 주문고객;
+
+-- 주문 테이블에서 banana 고객이 주문한 제품의 명칭을 조회
+select * from 주문;
+select * from 제품;
+select 주문.주문고객, 주문.주문제품, 제품.제품명 from 주문, 제품
+	where 주문.주문제품 = 제품.제품번호;
+    
+-- 나이가 30세 이상인 고객이 주문한 제품의 주문내역 조회
+select * from 고객;
+select * from 주문;
+select 고객.고객아이디, 주문.주문제품, 주문.주문일자
+	from 고객, 주문
+    where 고객.고객아이디 = 주문.주문고객 and 고객.나이 >= 30;
+
+-- melon 고객이 주문한 제품의 제품코드, 수량, 단가, 금액
+select * from 고객;
+select * from 제품;
+select 주문.주문고객, 제품.제품번호, 주문.수량, 제품.단가, 제품.단가 * 주문.수량 as 금액
+	from 제품, 주문
+	where 제품.제품번호 = 주문.주문제품 and 주문고객 = "melon";
+    
+-- 직업이 학생인 고객이 구매한 제품코드와 구매일자를 출력
+select * from 고객;
+select * from 제품;
+select 고객.고객아이디, 고객.직업, 주문.주문제품, 고객.고객이름, 주문.주문일자 
+	from 주문, 고객
+    where 고객.고객아이디 = 주문.주문고객 and 고객.직업 = "학생";
+    
+-- 고명석 고객이 주문한 제품의 제품명 조회
+select * from 고객;
+select * from 제품;
+select * from 주문;
+
+select 고객.고객이름, 제품.제품명
+	from 고객, 제품, 주문
+    where 고객.고객아이디 = 주문.주문고객 and 제품.제품번호 = 주문.주문제품
+    and 고객.고객이름 = "고명석";
+select c.고객이름, p.제품명
+	from 고객 c, 제품 p, 주문 o
+    where c.고객아이디 = o.주문고객 and p.제품번호 = o.주문제품
+    and c.고객이름 = "고명석";
+
+
+-- 배송지가 서울인 고객의 고객이름, 제품명, 주문일자 출력(단, 별명 사용)
+select * from 주문;
+select * from 고객;
+select c.고객이름, p.제품명, o.주문일자, o.배송지
+	from 고객 c, 제품 p, 주문 o
+    where c.고객아이디 = o.주문고객 and p.제품번호 = o.주문제품 and
+    o.배송지 like "서울%";
+    
+-- 달콤비스킷을 제조한 제조업체가 생산한 제품들의 제품명과 단가 조회
+
+select 제품명, 단가 from 제품 where 제조업체 = 
+(select 제조업체 from 제품 where 제품명 = '달콤비스킷');
+
+-- 적립금이 가장 많은 고객의 이름과 적립금
+select 고객이름, 적립금 from 고객 where 적립금 = 
+(select max(적립금) from 고객);
+
+-- banana 고객이 주문한 제품의 제품명과 제조업체 조회
+select * from 제품 where 제품번호 in
+	(select 주문제품 from 주문 where 주문고객 = 'banana');
+    -- 위 내용을 join 구문으로 작성
+select 제품.제품명, 제품.제조업체, 주문.주문일자
+	from 제품,주문
+    where 제품.제품번호 = 주문.주문제품 and 주문고객 = 'banana';
+    
+-- banana 고객이 주문하지 않은 제품의 제품명과 제조업체 조회
+select * from 제품 where 제품번호 not in
+	(select 주문제품 from 주문 where 주문고객 = 'banana');
+    
+-- 2019년 3월 15일에 제품을 주문한 고객
+select 고객.고객이름 from 고객 where
+exists (select * from 주문 
+	where 주문일자 = '2019-03-15' and 주문.주문고객 = 고객.고객아이디);
+
+select * from 주문;
+-- 주문 테이블로부터 2019년 3월 15일에 주문한 고객의 고객이름 조회(다중 행일 경우)
+select 고객이름 from 고객 where 고객아이디 in
+(select 주문고객 from 주문 where 주문일자 = '2019-03-15');
+
+-- 주문수량의 평균 이상을 주문한 고객들의 고객이름 조회
+select * from 고객 where 고객아이디 in 
+	(select 주문고객 from 주문 where 수량 >= 
+	(select avg(수량) from 주문));
+    
+select 고객아이디 from 고객;
+select * from 제품;
+-- 나이가 30 이상인 고객이 주문한 상품의 상품명, 단가, 금액을 조회(서브쿼리)
+select 제품.제품명, 제품.단가, 제품.단가 * 주문.수량 from 제품, 주문
+where 제품.제품번호 = 주문.주문제품 and 제품.제품번호 in
+(select 주문제품 from 주문 where 주문고객 in
+(select 고객아이디 from 고객 where 나이 >= 30));
+
+
+select 제품.제품명, 제품.단가, 주문.수량*제품.단가
+	from 고객, 주문, 제품
+	where 고객.고객아이디 = 주문.주문고객 and 제품.제품번호 = 주문.주문제품
+		and 고객.나이 >= 30;
