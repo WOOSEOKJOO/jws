@@ -235,3 +235,70 @@ select 제품.제품명, 제품.단가, 주문.수량*제품.단가
 	from 고객, 주문, 제품
 	where 고객.고객아이디 = 주문.주문고객 and 제품.제품번호 = 주문.주문제품
 		and 고객.나이 >= 30;
+        
+use mysql;
+INSERT INTO 고객(고객아이디, 고객이름, 나이, 등급, 적립금)
+VALUES ('tomato', '정은심', 36, 'gold', 4000);
+SELECT  *  FROM  고객;  
+
+INSERT INTO 고객(고객아이디, 고객이름, 나이, 등급, 직업, 적립금)
+VALUES ('strawberry', '최유경', 30, 'vip', '공무원', 100);
+SELECT * FROM  고객;  
+
+create table 한빛제품 (
+ 제품명     VARCHAR(20),
+	재고량     INT,
+	단가       INT
+);
+
+INSERT INTO 한빛제품(제품명, 재고량, 단가)
+SELECT  제품명, 재고량, 단가
+FROM    제품
+WHERE   제조업체 = '한빛제과';
+SELECT  *  FROM  한빛제품;
+
+Select * from 제품;
+-- 제품번호가 p03인 제품의 제품명을 통큰파이로 수정
+update 제품 set 제품명 = '통큰파이' where 제품번호 = 'p03';
+select * from 제품;
+
+-- 제품번호가 p03인 제품의 제품명을 통큰파이로, 단가를 3000으로 수정
+update 제품 set 제품명 = '통큰파이', 단가 = 3000 where 제품번호 = 'p03';
+select * from 제품;
+
+-- 모든 제품에 대해 단가를 10% 인상
+update 제품 set 단가 = 단가 * 1.1;
+select * from 제품;
+
+-- 정소화 고객이 주문한 제품의 수량을 5로 변경
+update 주문 set 수량 = 5 where 주문고객 in 
+	(select 고객아이디 from 고객 where 고객이름 = '정소화');
+select * from 주문;
+
+-- 2019-05-22 주문한 내용 삭제
+delete from 주문 where 주문일자 = '2019-05-22';
+
+-- 정소화 고객이 주문한 내용을 삭제
+delete from 주문 where 주문고객 in
+(select 고객아이디 from 고객 where 고객이름 = '정소화');
+
+-- 고객아이디, 고객이름, 나이를 가진 우수고객 view를 생성, vip 고객에 대하여
+create view 우수고객(고객아이디, 고객이름, 나이)
+as 
+select 고객아이디, 고객이름, 나이 from 고객 where 등급 = 'vip';
+
+select * from 우수고객 where 나이 >= 25;
+
+select * from 제품;
+select * from 고객;
+select * from 주문;
+-- 제품 단가 3000원 이상인 제품을 구매한 고객의 고객아이디, 이름, 제품명 조회(주문중심)
+select c.고객아이디, c.고객이름, p.제품명
+	from 고객 c, 주문 o, 제품 p
+    where c.고객아이디 = o.주문고객 and p.제품번호 = o.주문제품 and
+		p.단가 >= 3000;
+
+-- 나이가 30 이하인 고객이 주문한 제품의 제품명, 단가를 조회
+select 제품명, 단가 from 제품 where 제품번호 in
+	(select 제품번호 from 주문 where 주문고객 in
+		(select 고객아이디 from 고객 where 나이 <= 30));
