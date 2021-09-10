@@ -1,11 +1,15 @@
 package lesson001;
 
+import java.util.Scanner;
+
 public class Z001_if {
 
 	public static void main(String[] args) {
 		
-	    // year to be checked
-	    int year = 2000;
+		Scanner reader = new Scanner(System.in);
+		System.out.println("년도를 입력하세요:");
+		// year to be checked
+	    int year = reader.nextInt();
 	    boolean leap = false;
 
 	    // 년도가 4로 나눠지면
